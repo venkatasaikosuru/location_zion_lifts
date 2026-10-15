@@ -258,12 +258,11 @@
       userMarker = L.circleMarker([userPosition.lat, userPosition.lng], {
         radius: 9, color: '#ffffff', weight: 3, fillColor: '#e53935', fillOpacity: 1
       }).addTo(map).bindTooltip('Your current location', { permanent: true, direction: 'top', offset: [0, -10], className: 'current-location-label' });
-      userMarker.bindPopup(() => {
-        const box = document.createElement('div');
-        box.innerHTML = '<strong>Your current location</strong><br><button type="button" class="navigate" style="margin-top:8px">Navigate 📍</button>';
-        box.querySelector('button').addEventListener('click', () => window.open(userNavURL(), '_blank', 'noopener'));
-        return box;
-      });
+     userMarker.bindPopup(() => {
+    const box = document.createElement('div');
+    box.innerHTML = '<strong>Your current location</strong>';
+    return box;
+});
       render();
       fitEverything();
     }, error => {
