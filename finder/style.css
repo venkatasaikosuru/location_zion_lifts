@@ -1,0 +1,105 @@
+* { box-sizing: border-box; }
+:root {
+  --navy: #06447e;
+  --navy-dark: #073a69;
+  --green: #25a844;
+  --text: #171b22;
+  --muted: #6b7280;
+  --border: #e8ebef;
+}
+html, body { margin: 0; min-height: 100%; font-family: Arial, Helvetica, sans-serif; color: var(--text); background: #f7f8fa; }
+.topbar {
+  height: 90px; background: linear-gradient(110deg, #063c70, #07539a);
+  display: flex; align-items: center; justify-content: center; padding: 12px 24px;
+  position: relative; color: #fff; box-shadow: 0 2px 8px #001c3925; z-index: 500;
+}
+.brand { color: white; text-decoration: none; font-size: 23px; font-weight: 800; letter-spacing: .7px; }
+.contact { position: absolute; right: 24px; top: 15px; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+.contact-button { display: inline-flex; align-items: center; gap: 10px; border-radius: 22px; padding: 8px 16px; background: white; color: #083c6e; text-decoration: none; font-weight: 700; font-size: 13px; }
+.phone { color: white; text-decoration: none; font-size: 12px; font-weight: 600; }
+.map-wrap { position: relative; width: 100%; height: min(54vh, 510px); min-height: 310px; background: #e7edf1; }
+#map { height: 100%; width: 100%; z-index: 1; }
+.map-status { position: absolute; z-index: 400; left: 14px; bottom: 14px; background: #fff; padding: 8px 12px; border-radius: 7px; box-shadow: 0 2px 10px #0002; font-size: 12px; color: #364152; }
+.centers { background: #fff; border-radius: 22px 22px 0 0; margin-top: -12px; position: relative; z-index: 10; padding: 22px 22px 16px; min-height: 280px; box-shadow: 0 -3px 15px #0000000a; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+h1 { font-size: 20px; margin: 0; font-weight: 750; }
+.controls { display: flex; align-items: center; gap: 10px; }
+.radius-label { font-size: 13px; color: var(--muted); }
+select, input { border: 1px solid #dfe4e9; border-radius: 8px; background: white; font: inherit; padding: 10px 12px; outline-color: #0d69b8; }
+select { min-width: 100px; }
+button { cursor: pointer; font: inherit; }
+.show-all, .locate-button { border: 0; border-radius: 7px; padding: 10px 17px; background: var(--navy-dark); color: #fff; font-size: 13px; font-weight: 700; }
+.location-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.location-tools input { flex: 1; min-width: 100px; }
+.locate-button { white-space: nowrap; background: #eef5fb; color: #08487e; border: 1px solid #d8e8f7; }
+.count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.location-list { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.location-card { border: 1px solid #edf0f3; border-radius: 13px; padding: 19px 16px 16px; box-shadow: 0 3px 7px #0000000c; background: #fff; }
+.card-title { font-size: 16px; font-weight: 750; margin: 0 0 15px; }
+.address { font-size: 13px; line-height: 1.5; color: #777f8b; margin: 0 0 14px; overflow-wrap: anywhere; }
+.navigate { width: 100%; min-height: 46px; border: 0; border-radius: 8px; background: var(--green); color: #fff; font-weight: 750; transition: background .15s; }
+.navigate:hover { background: #1d9238; }
+.empty { color: var(--muted); padding: 20px 4px; }
+.footnote { text-align: center; color: #8a929c; font-size: 11px; margin: 20px 0 0; }
+.leaflet-popup-content { line-height: 1.5; }
+.popup-name { font-weight: 700; margin-bottom: 5px; }
+.popup-link { color: #07539a; font-weight: 700; }
+@media (max-width: 620px) {
+  .topbar { height: 82px; justify-content: flex-start; padding-left: 18px; }
+  .brand { font-size: 20px; }
+  .contact { right: 12px; top: 13px; }
+  .contact-button { padding: 7px 10px; font-size: 12px; }
+  .map-wrap { height: 43vh; min-height: 280px; }
+  .centers { padding: 18px 13px 14px; }
+  .section-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .controls { width: 100%; flex-wrap: wrap; }
+  select { flex: 1; }
+  .location-tools { flex-wrap: wrap; }
+  .location-tools input { order: 1; flex-basis: 100%; }
+  .count { margin-left: auto; }
+  .location-card { padding: 16px 13px 13px; }
+}
+
+/* ---------- Tooltips: rounded bubble with arrow below ---------- */
+.leaflet-tooltip.lift-label,
+.leaflet-tooltip.admin-location-label,
+.leaflet-tooltip.current-location-label {
+  border: none;
+  border-radius: 10px;
+  color: #151414;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+  overflow: visible; /* never clip the arrow */
+}
+.leaflet-tooltip.lift-label { background: #f7f7f8; font-size: 13px; padding: 6px 14px; }
+.leaflet-tooltip.admin-location-label { background: #075a35; font-size: 12px; padding: 6px 12px; letter-spacing: .3px; }
+.leaflet-tooltip.current-location-label { background: #e53935; font-size: 12px; padding: 5px 10px; }
+
+/* Arrow (Leaflet draws it with :before; we only size and color it) */
+.leaflet-tooltip-top.lift-label:before,
+.leaflet-tooltip-top.admin-location-label:before,
+.leaflet-tooltip-top.current-location-label:before {
+  display: block;
+  border-width: 8px;
+  margin-left: -8px;
+  margin-bottom: -16px;
+}
+.leaflet-tooltip-top.lift-label:before { border-top-color: #fff; }
+.leaflet-tooltip-top.admin-location-label:before { border-top-color: #fff; }
+.leaflet-tooltip-top.current-location-label:before { border-top-color: #fff; }
+
+.admin-marker-wrap { background: transparent; border: 0; }
+.admin-marker-pin { width: 34px; height: 34px; border: 3px solid #fff; border-radius: 50% 50% 50% 8px; transform: rotate(-45deg); background: #0b8f4d; box-shadow: 0 3px 12px #063d2b66; display: flex; align-items: center; justify-content: center; }
+.admin-marker-pin span { color: #fff; font-size: 16px; transform: rotate(45deg); }
+.admin-card { border: 2px solid #0b8f4d; background: linear-gradient(120deg, #f0fff6, #fff 65%); box-shadow: 0 4px 14px #0b8f4d20; }
+.admin-card .card-title { margin-top: 9px; }
+.admin-card-tag { display: inline-block; background: #0b8f4d; color: #fff; border-radius: 5px; padding: 5px 8px; font-size: 10px; font-weight: 800; letter-spacing: .5px; }
+.admin-navigate { background: #087b42; }
+.admin-navigate:hover { background: #066535; }
+
+
+
+.show-more { display: block; width: 100%; margin: 12px 0; padding: 12px; border: 0; border-radius: 10px; background: #073665; color: #fff; font-weight: 700; cursor: pointer; }
+.show-more:hover { background: #0a4a8c; }

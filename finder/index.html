@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zion-Lifts | Location Finder</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Zion Lifts home">ZION-LIFTS</a>
+    <div class="contact">
+      <a class="contact-button" href="https://zionlifts.com/">Contact Us <span>➤</span></a>
+      
+    </div>
+  </header>
+
+  <main>
+    <section class="map-wrap" aria-label="Lift locations map">
+      <div id="map"></div>
+      <div class="map-status" id="map-status">Loading lift locations…</div>
+    </section>
+
+    <section class="centers">
+      <div class="section-heading">
+        <h1>Nearest Centers</h1>
+        <div class="controls">
+          <label class="radius-label" for="radius">Range</label>
+          <select id="radius" aria-label="Search radius">
+            <option value="5">5 km</option>
+            <option value="10">10 km</option>
+            <option value="20">20 km</option>
+            <option value="30">30 km</option>
+            <option value="all" selected>Show All</option>
+          </select>
+          <button class="show-all" id="show-all" type="button">Show All</button>
+        </div>
+      </div>
+
+      <div class="location-tools">
+        <button id="locate" class="locate-button" type="button">◎ Use My Location</button>
+        <input id="search" type="search" placeholder="Search by name…" aria-label="Search lift names">
+        <span class="count" id="count">0 locations</span>
+      </div>
+
+      <div id="location-list" class="location-list">
+        <p class="empty">Loading locations…</p>
+      </div>
+      <p class="footnote">Map data © OpenStreetMap contributors · Map powered by Leaflet</p>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- SheetJS reads the Excel workbook directly in the browser; no JSON data file is needed. -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
