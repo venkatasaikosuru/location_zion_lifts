@@ -205,7 +205,7 @@
       const card = document.createElement('article');
       card.className = 'location-card';
       const distanceText = location.distance == null ? '' : `<p class="address">${location.distance.toFixed(1)} km away</p>`;
-      card.innerHTML = `<h2 class="card-title">${escapeHTML(location.name)}</h2>${distanceText}<button class="navigate" type="button">Navigate 📍</button>`;
+      card.innerHTML = `<h2 class="card-title">${escapeHTML(location.mailingAddress)}</h2>${distanceText}<button class="navigate" type="button">Navigate 📍</button>`;
       card.querySelector('button').addEventListener('click', () => window.open(directionsURL(location), '_blank', 'noopener'));
       frag.appendChild(card);
     });
@@ -280,38 +280,71 @@
   document.getElementById('show-all').addEventListener('click', showAllOnMap);
   document.getElementById('locate').addEventListener('click', requestCurrentLocation);
 
-  async function loadExcelFile() {
-    try {
-      statusElement.textContent = 'Loading lift locations from data.xls…';
-      const response = await fetch('./data.xls');
-      if (!response.ok) throw new Error(`Could not load data.xls (HTTP ${response.status})`);
-      const workbookBytes = await response.arrayBuffer();
-      const workbook = XLSX.read(workbookBytes, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-      // Use the exact "mailing address" column from the supplied workbook for map labels.
-      // Do not substitute the separate generic "address" column.
-      locations = rows.map(row => {
-        const mailingAddress = String(
-          row['mailing address'] ?? row['Mailing Address'] ?? row['MAILING ADDRESS'] ?? ''
-        ).trim();
-        const name = String(row.name || row.Name || row.NAME || 'Unnamed lift').trim();
-        return {
-          name,
-          mailingAddress,
-          latitude: Number(row.lat ?? row.latitude ?? row.Latitude),
-          longitude: Number(row.lng ?? row.lon ?? row.longitude ?? row.Longitude),
-          searchKey: `${name} ${mailingAddress}`.toLowerCase()
-        };
-      }).filter(row => Number.isFinite(row.latitude) && Number.isFinite(row.longitude)
-        && row.latitude >= -90 && row.latitude <= 90 && row.longitude >= -180 && row.longitude <= 180);
-      render();
-      fitEverything();
-      requestCurrentLocation();
-    } catch (error) {
-      console.error(error);
-      statusElement.textContent = 'Could not load data.xls';
-      list.innerHTML = '<p class="empty">Could not read data.xls. Make sure the Excel file is in the same folder as index.html and open the project with VS Code Live Server. Internet access is required for the map and Excel library.</p>';
+// ====== PASTE YOUR GOOGLE SHEET LINK HERE (between the quotes) ======
+// Use the link from: File > Share > Publish to web > MapData tab > CSV
+const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRvYJ-GXNo1XaRPeox--AfUuLdLWpvfdkB1XHxvM8tdFai2WcBn22CZblKLFbpr2O3QfKIQ0KS4ihBj/pub?gid=1948021833&single=true&output=csv';
+// =====================================================================
+
+// Reads rows from a link (Google Sheet or data.xls) and makes column names case-insensitive
+async function readRows(url) {
+  const response = await fetch(url, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`Could not load ${url} (HTTP ${response.status})`);
+  const workbook = XLSX.read(await response.arrayBuffer(), { type: 'array' });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const raw = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  return raw.map(r => {
+    const o = {};
+    for (const k of Object.keys(r)) o[String(k).trim().toLowerCase()] = r[k];
+    return o;
+  });
+}
+
+async function loadExcelFile() {
+  try {
+    let rows = null;
+
+    // 1) Try the Google Sheet first (always the latest data)
+    if (GOOGLE_SHEET_URL) {
+      try {
+        statusElement.textContent = 'Loading latest lift locations…';
+        const sep = GOOGLE_SHEET_URL.includes('?') ? '&' : '?';
+        rows = await readRows(`${GOOGLE_SHEET_URL}${sep}t=${Date.now()}`);
+        if (!rows.length) throw new Error('Google Sheet returned no rows');
+        console.log('Loaded from Google Sheet');
+      } catch (err) {
+        console.warn('Google Sheet failed, using data.xls backup:', err);
+        rows = null;
+      }
     }
+
+    // 2) If the Google Sheet did not work, use the data.xls backup
+    if (!rows) {
+      statusElement.textContent = 'Loading lift locations from data.xls…';
+      rows = await readRows('./data.xls');
+      console.log('Loaded from data.xls (backup)');
+    }
+
+    // Use the exact "mailing address" column for map labels.
+    locations = rows.map(row => {
+      const mailingAddress = String(row['mailing address'] ?? '').trim();
+      const name = String(row.name || 'Unnamed lift').trim();
+      return {
+        name,
+        mailingAddress,
+        latitude: Number(row.lat ?? row.latitude),
+        longitude: Number(row.lng ?? row.lon ?? row.longitude),
+        searchKey: `${name} ${mailingAddress}`.toLowerCase()
+      };
+    }).filter(row => Number.isFinite(row.latitude) && Number.isFinite(row.longitude)
+      && row.latitude >= -90 && row.latitude <= 90 && row.longitude >= -180 && row.longitude <= 180);
+
+    render();
+    fitEverything();
+    requestCurrentLocation();
+  } catch (error) {
+    console.error(error);
+    statusElement.textContent = 'Could not load locations';
+    list.innerHTML = '<p class="empty">Could not load the locations. Check your internet connection, the Google Sheet link, and that data.xls is beside index.html.</p>';
   }
-  loadExcelFile();
+}
+loadExcelFile();
